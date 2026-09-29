@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b10">
+<title>Ki-Roku Prototype</title>
+<style>
+:root{--bg:#080b10;--fg:#e7f6ff;--muted:#66727d;--line:#34424d;--cyan:#38d9ff;--red:#ff3b55}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-height:100vh}
+button{font:inherit;color:inherit}.screen{display:none;min-height:100vh;padding:24px 18px}.screen.active{display:flex}.center{align-items:center;justify-content:center;flex-direction:column}
+.logo{font-size:clamp(42px,12vw,72px);letter-spacing:.12em;margin:8px 0}.sub{color:var(--muted);letter-spacing:.24em;font-size:12px}
+.btn{background:#0d131a;border:1px solid #33414c;border-radius:8px;min-width:190px;min-height:50px;margin:6px;padding:10px 22px;letter-spacing:.14em}
+.game{flex-direction:column;align-items:center}.stageLabel,.state{letter-spacing:.22em;font-size:12px;color:#91a0aa}.stage{font-size:32px}
+.board{width:min(92vw,480px);margin:12px auto 0}.board svg{display:block;width:100%;height:auto}
+.visual{stroke:var(--line);stroke-width:5;stroke-linecap:round;transition:stroke .04s,filter .04s}.hit{stroke:transparent;stroke-width:42;stroke-linecap:round;pointer-events:stroke;cursor:pointer}
+.side.on .visual{stroke:var(--cyan);filter:drop-shadow(0 0 8px var(--cyan))}.side.bad .visual{stroke:var(--red);filter:drop-shadow(0 0 9px var(--red))}
+.lifeSvg{width:84px;margin:6px 0 2px}.life{stroke:var(--cyan);stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 3px var(--cyan));transition:opacity .15s}.life.off{opacity:.14;filter:none}
+.state{font-size:14px;color:var(--fg);min-height:20px}.wait{font-size:12px;color:var(--muted);margin-top:12px}.timer{width:min(70vw,340px);height:4px;background:#18212a;border-radius:99px;overflow:hidden;margin-top:12px;display:none}.timer.show{display:block}.bar{width:100%;height:100%;background:var(--cyan);transform-origin:left}
+.over{gap:18px;text-align:center}.big{font-size:48px}.ranking{width:min(94vw,540px);margin:auto;flex-direction:column}.rankrow{display:grid;grid-template-columns:55px 1fr 1fr;padding:9px 4px;border-bottom:1px solid #202b34}.rankhead{color:var(--muted);font-size:12px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<section id="menu" class="screen active center">
+<div class="sub">MEMORY SEQUENCE</div><h1 class="logo">Ki-Roku</h1><div class="sub" style="margin-bottom:28px">六辺を記憶する</div>
+<svg viewBox="0 0 120 105" width="110" aria-hidden="true"><polygon points="60,5 105,30 105,75 60,100 15,75 15,30" fill="none" stroke="#38d9ff" stroke-width="3"/></svg>
+<div style="margin-top:26px"><button id="start" class="btn">START</button><br><button id="ranking" class="btn">RANKING</button></div>
+<p style="color:var(--muted);font-size:11px;margin-top:22px">音声を使用します。発光した辺を同じ順番でタッチ。</p>
+</section>
+<section id="game" class="screen game">
+<div class="stageLabel">STAGE</div><div id="stage" class="stage">1</div>
+<svg class="lifeSvg" viewBox="0 0 120 105" aria-label="ライフ">
+<line class="life" x1="60" y1="5" x2="105" y2="30"/><line class="life" x1="105" y1="30" x2="105" y2="75"/><line class="life" x1="105" y1="75" x2="60" y2="100"/><line class="life" x1="60" y1="100" x2="15" y2="75"/><line class="life" x1="15" y1="75" x2="15" y2="30"/><line class="life" x1="15" y1="30" x2="60" y2="5"/>
+</svg>
+<div class="board"><svg viewBox="0 0 400 350" aria-label="記憶用六角形">
+<g class="side" data-i="0"><line class="visual" x1="200" y1="20" x2="350" y2="105"/><line class="hit" x1="200" y1="20" x2="350" y2="105"/></g>
+<g class="side" data-i="1"><line class="visual" x1="350" y1="105" x2="350" y2="245"/><line class="hit" x1="350" y1="105" x2="350" y2="245"/></g>
+<g class="side" data-i="2"><line class="visual" x1="350" y1="245" x2="200" y2="330"/><line class="hit" x1="350" y1="245" x2="200" y2="330"/></g>
+<g class="side" data-i="3"><line class="visual" x1="200" y1="330" x2="50" y2="245"/><line class="hit" x1="200" y1="330" x2="50" y2="245"/></g>
+<g class="side" data-i="4"><line class="visual" x1="50" y1="245" x2="50" y2="105"/><line class="hit" x1="50" y1="245" x2="50" y2="105"/></g>
+<g class="side" data-i="5"><line class="visual" x1="50" y1="105" x2="200" y2="20"/><line class="hit" x1="50" y1="105" x2="200" y2="20"/></g>
+</svg></div>
+<div id="state" class="state">REMEMBER</div><div id="timer" class="timer"><div id="bar" class="bar"></div></div><div id="wait" class="wait">WAIT 0.00 s</div>
+</section>
+<section id="over" class="screen center over"><div class="sub">GAME OVER</div><div><div class="sub">STAGE</div><div id="finalStage" class="big">1</div></div><div><div class="sub">WAIT TIME</div><div id="finalTime" style="font-size:24px">0.00 s</div></div><button id="retry" class="btn">RETRY</button><button id="title" class="btn">TITLE</button></section>
+<section id="ranks" class="screen ranking"><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="sub">LOCAL</div><h2>BEST 30</h2></div><button id="back" class="btn" style="min-width:100px">BACK</button></div><div class="rankrow rankhead"><span>#</span><span>STAGE</span><span>WAIT</span></div><div id="rankList"></div><div id="empty" style="text-align:center;color:var(--muted);padding:50px">NO RECORDS</div></section>
+<script>
+(()=>{const q=s=>document.querySelector(s),qa=s=>[...document.querySelectorAll(s)],screens=qa('.screen'),sides=qa('.side'),freq=[261.63,293.66,329.63,392,440,523.25];let ac,stage=1,lives=6,seq=[],pos=0,state='idle',wait=0,waitStart=0,token=0,raf=0;
+const show=id=>{screens.forEach(x=>x.classList.remove('active'));q(id).classList.add('active')},sleep=m=>new Promise(r=>setTimeout(r,m));
+function audio(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}
+function tone(i,bad=false){audio();const o=ac.createOscillator(),g=ac.createGain();o.type=bad?'sawtooth':'sine';o.frequency.value=bad?115:freq[i];g.gain.setValueAtTime(.001,ac.currentTime);g.gain.exponentialRampToValueAtTime(.15,ac.currentTime+.008);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.15);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.17)}
+function flash(i,m,bad=false){const e=sides[i];e.classList.remove('on','bad');void e.getBBox();e.classList.add(bad?'bad':'on');setTimeout(()=>e.classList.remove('on','bad'),m)}
+function lifeUI(){qa('.life').forEach((e,i)=>e.classList.toggle('off',i>=lives))}
+function speed(){const x=Math.max(0,Math.min(1,(stage-1)/98));return Math.round(1000-800*Math.pow(x,1.75))}
+function tick(){cancelAnimationFrame(raf);const f=()=>{q('#wait').textContent='WAIT '+(wait+(state==='input'?(performance.now()-waitStart)/1000:0)).toFixed(2)+' s';if(state==='input')raf=requestAnimationFrame(f)};f()}
+async function remember(){const t=++token;state='remember';q('#state').textContent='REMEMBER';q('#timer').classList.remove('show');seq=Array.from({length:stage+1},()=>Math.floor(Math.random()*6));pos=0;const iv=speed(),on=Math.round(iv*.7),off=iv-on;for(const n of seq){if(t!==token)return;flash(n,on);tone(n);await sleep(on);if(t!==token)return;await sleep(off)}if(t!==token)return;state='input';q('#state').textContent='INPUT';waitStart=performance.now();tick()}
+async function transition(ok){state='transition';cancelAnimationFrame(raf);q('#state').textContent=ok?'CLEAR':'MISS';q('#timer').classList.add('show');const b=q('#bar');b.style.transition='none';b.style.transform='scaleX(1)';void b.offsetWidth;b.style.transition='transform 2s linear';b.style.transform='scaleX(0)';await sleep(2000);q('#timer').classList.remove('show');if(ok)stage++;q('#stage').textContent=stage;remember()}
+function history(){try{return JSON.parse(localStorage.getItem('kiroku-history')||'[]')}catch(e){return[]}}
+function save(){const h=history();h.push({stage,time:+wait.toFixed(3),date:Date.now(),version:'0.1'});localStorage.setItem('kiroku-history',JSON.stringify(h))}
+function gameOver(){state='over';token++;save();q('#finalStage').textContent=stage;q('#finalTime').textContent=wait.toFixed(2)+' s';show('#over')}
+function press(i){if(state!=='input')return;wait+=(performance.now()-waitStart)/1000;flash(i,110);tone(i);if(i!==seq[pos]){state='locked';flash(i,250,true);tone(i,true);lives--;lifeUI();if(!lives)setTimeout(gameOver,260);else transition(false);return}pos++;if(pos===seq.length){state='locked';transition(true)}else{waitStart=performance.now();tick()}}
+function start(){audio();token++;stage=1;lives=6;wait=0;q('#stage').textContent='1';q('#wait').textContent='WAIT 0.00 s';lifeUI();show('#game');remember()}
+function ranking(){const a=history().sort((a,b)=>b.stage-a.stage||a.time-b.time).slice(0,30),box=q('#rankList');box.innerHTML='';q('#empty').style.display=a.length?'none':'block';a.forEach((r,i)=>{const d=document.createElement('div');d.className='rankrow';d.innerHTML='<span>'+(i+1)+'</span><span>'+r.stage+'</span><span>'+Number(r.time).toFixed(2)+' s</span>';box.appendChild(d)});show('#ranks')}
+sides.forEach(s=>s.querySelector('.hit').addEventListener('pointerdown',e=>{e.preventDefault();press(+s.dataset.i)}));q('#start').onclick=start;q('#retry').onclick=start;q('#ranking').onclick=ranking;q('#back').onclick=()=>show('#menu');q('#title').onclick=()=>show('#menu');
+})();
+</script>
+</body></html>
